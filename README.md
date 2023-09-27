@@ -6,7 +6,7 @@ This guide encompasses best practices and recommended architecture for building 
 ## Introduction
 This sample demonstrates how one can
 
-- Setup base architecture of React Native app using Clean Architecture
+- Setup base architecture of Flutter app using Clean Architecture
 - Use dependency injection for layers separation
 - Make api calls using Axios plugin.
 
@@ -36,9 +36,11 @@ This sample demonstrates how one can
 ```
 
 #### Dependencies
-- [Axios](https://github.com/axios/axios) : http client
-- [Styled-components](https://github.com/styled-components/styled-components) : styled-components
-- [Inversify](https://github.com/inversify/InversifyJS) : dependency injection
+- [Dio](https://pub.dev/packages/dio) : http client
+- [Get_it](https://pub.dev/packages/get_it) : dependency injection
+- [Flutter_bloc](https://pub.dev/packages/flutter_bloc) : Flutter Widgets that make it easy to implement the BLoC (Business Logic Component) design pattern
+- [Rxdart](https://pub.dev/packages/rxdart) : RxDart extends the capabilities of Dart Streams and StreamControllers.
+- [Dartz](https://pub.dev/packages/dartz) : Functional programming in Dart.
 
 # Module Structure
 
