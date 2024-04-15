@@ -20,7 +20,9 @@ Future<void> configureDI() async {
 }
 
 Future<void> injectionBloc() async {
-  injector.registerFactory(() => PhotoCubit());
+  injector.registerFactory(() => PhotoCubit(
+    injector.get<GetPhotoUseCase>(),
+  ));
 }
 
 Future<void> injectionDomain() async {

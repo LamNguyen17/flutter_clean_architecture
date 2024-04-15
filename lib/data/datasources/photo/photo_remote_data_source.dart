@@ -10,12 +10,15 @@ abstract class PhotoRemoteDataSource {
 
 class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
   final RestApiGateway _restApiGateway;
+
   PhotoRemoteDataSourceImpl(this._restApiGateway);
 
   @override
   Future<Either<Failure, dynamic>> getPhoto() async {
     try {
-      final response = await _restApiGateway.dio.get('?key=10378494-67ad2479ecf48567970bc1f0e&page=1&per_page=30');
+      final response = await _restApiGateway.dio
+          .get('?key=10378494-67ad2479ecf48567970bc1f0e&page=1&per_page=30');
+      print("getPhoto_response: $response");
       if (response.statusCode == 200) {
         var decode = Photos.fromJson(response.data);
         return Right(decode);

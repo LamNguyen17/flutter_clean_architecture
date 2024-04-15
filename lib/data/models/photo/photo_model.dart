@@ -55,7 +55,6 @@ class Hits {
 
   factory Hits.fromJson(Map<String, dynamic> json) => _$HitsFromJson(json);
 
-  // Map<String, dynamic> toJson() => _$HitsFromJson(this);
   Hits toJson() => _$HitsFromJson(this as Map<String, dynamic>);
 }
 
@@ -63,7 +62,6 @@ class Hits {
 class Photos {
   final int total;
   final int totalHits;
-  // final Hits hits;
   final List<Hits> hits;
 
   Photos(

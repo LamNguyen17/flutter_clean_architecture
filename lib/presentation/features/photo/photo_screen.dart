@@ -20,47 +20,51 @@ class _PhotoScreenState extends State<PhotoScreen> {
   @override
   void initState() {
     super.initState();
-    // context.read<PhotoCubit>().onFetched();
-    _photoBloc.onFetched();
+    _photoBloc.getPhoto();
   }
 
   @override
   void dispose() {
     super.dispose();
+    _photoBloc.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     title: const Text("Flutter Clean Architecture"),
-    //     backgroundColor: Colors.white,
-    //   ),
-    //   body: const Text(
-    //     'You have pushed the button this many times:',
-    //   ),
-    // );
-
     return BlocProvider<PhotoCubit>(
-      // create: (_) => context.read<PhotoCubit>(),
       create: (_) => _photoBloc,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Flutter Clean Architecture"),
           backgroundColor: Colors.white,
         ),
-        body: BlocBuilder<PhotoCubit, PhotoState>(
-          builder: (BuildContext context, state) {
-            if (state is PhotoLoading) {
-              return const CircularProgressIndicator();
-            } else if (state is PhotoSuccess) {
-              return WidgetCustomerSuccess(state.data);
-            }
-            return const Text('PhotoError');
-          },
-        ),
+        body: StreamBuilder<PhotoState?>(
+            stream: _photoBloc.results$,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final result = snapshot.data;
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    _photoBloc.getPhoto();
+                  },
+                  child: _renderStatePage(result),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
       ),
     );
+  }
+
+  Widget _renderStatePage(PhotoState? state) {
+    if (state is PhotoLoaded) {
+      return WidgetCustomerSuccess(state.data);
+    } else if (state is PhotoError) {
+      return const Text('PhotoError');
+    } else if (state is PhotoLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return const SizedBox.shrink();
   }
 }
 
@@ -93,7 +97,6 @@ class WidgetCustomerSuccess extends StatelessWidget {
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.error),
                   ),
-
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
@@ -126,59 +129,8 @@ class WidgetCustomerSuccess extends StatelessWidget {
                           ),
                         ]),
                   ),
-
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                  //   children: <Widget>[
-                  //     Text(
-                  //       '${data.hits[index].user}',
-                  //       overflow: TextOverflow.ellipsis,
-                  //       maxLines: 1,
-                  //       softWrap: false,
-                  //       style: const TextStyle(
-                  //         fontWeight: FontWeight.w700, // light
-                  //         fontStyle: FontStyle.normal, // italic
-                  //       ),
-                  //     ),
-                  //     Text('Thẻ: ${data.hits[index].tags}',
-                  //       overflow: TextOverflow.ellipsis,
-                  //       maxLines: 1,
-                  //       softWrap: false,),
-                  //     Text('Lượt thích: ${data.hits[index].likes}',
-                  //       overflow: TextOverflow.ellipsis,),
-                  //     Text('Bình luận: ${data.hits[index].comments}',
-                  //       overflow: TextOverflow.ellipsis,),
-                  //   ],
-                  // ),
                 ],
               ),
-              // child: Column(
-              //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-              //   crossAxisAlignment: CrossAxisAlignment.stretch,
-              //   children: <Widget>[
-              //     CachedNetworkImage(
-              //       imageUrl: '${data.hits[index].previewURL}',
-              //       imageBuilder: (context, image) => CircleAvatar(
-              //         backgroundImage: image,
-              //         radius: 50,
-              //       ),
-              //       placeholder: (context, url) =>
-              //           const CircularProgressIndicator(),
-              //       errorWidget: (context, url, error) =>
-              //           const Icon(Icons.error),
-              //     ),
-              //     Text(
-              //       '${data.hits[index].user}',
-              //       style: const TextStyle(
-              //         fontWeight: FontWeight.w700, // light
-              //         fontStyle: FontStyle.normal, // italic
-              //       ),
-              //     ),
-              //     Text('Thẻ: ${data.hits[index].tags}'),
-              //     Text('Lượt thích: ${data.hits[index].likes}'),
-              //     Text('Bình luận: ${data.hits[index].comments}'),
-              //   ],
-              // ),
             ),
           ),
         );

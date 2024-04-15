@@ -15,13 +15,20 @@ class PhotoLoading extends PhotoState {
   const PhotoLoading();
 }
 
-class PhotoSuccess extends PhotoState {
+class PhotoLoaded extends PhotoState {
   final dynamic data;
 
-  const PhotoSuccess(this.data);
+  const PhotoLoaded(this.data);
+
+  @override
+  List<Object> get props => [data];
 }
 
 class PhotoError extends PhotoState {
   final String message;
+
   const PhotoError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
