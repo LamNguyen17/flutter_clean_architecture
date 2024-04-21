@@ -11,7 +11,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
   PhotoRepositoryImpl(this._dataSource);
 
   @override
-  Future<Either<Failure, dynamic>> getPhoto() async {
-    return await _dataSource.getPhoto();
+  Future<Either<Failure, dynamic>> getPhoto(String? query) async {
+    return await _dataSource.getPhoto(query);
   }
 }
