@@ -1,11 +1,10 @@
 import 'dart:io' show Platform;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter_clean_architecture/di/injection.dart';
+import 'package:flutter_clean_architecture/presentation/components/text_primary.dart';
 
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_cubit.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
@@ -42,7 +41,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
           ),
           body: RefreshIndicator(
             onRefresh: () async {
-              _photoBloc.getPhoto();
+              _photoBloc.loadMore();
             },
             child: Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -60,7 +59,8 @@ class _PhotoScreenState extends State<PhotoScreen> {
                           keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(fontWeight: FontWeight.w400),
                           decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 8.0),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 0.0, horizontal: 8.0),
                             counter: SizedBox.shrink(),
                             focusedBorder: OutlineInputBorder(
                               borderRadius:
@@ -78,7 +78,8 @@ class _PhotoScreenState extends State<PhotoScreen> {
                               borderSide: BorderSide(color: Colors.grey),
                             ),
                             hintText: 'Tìm kiếm',
-                            hintStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
+                            hintStyle: TextStyle(
+                                fontWeight: FontWeight.w400, fontSize: 14),
                           ),
                         )),
                     Expanded(
