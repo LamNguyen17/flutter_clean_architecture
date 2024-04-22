@@ -3,7 +3,7 @@ This guide encompasses best practices and recommended architecture for building 
 - [Guide to app architecture (Gooogle Developers)](https://developer.android.com/topic/architecture?continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-architecture%3Fhl%3Dvi%23article-https%3A%2F%2Fdeveloper.android.com%2Ftopic%2Farchitecture)
 ## Medium
 - [Read Medium about my article](https://medium.com/@jyxjrpp/clean-architecture-trong-react-native-3b2c5c5bf3e)
-## Introduction
+## 🚀 Introduction
 This sample demonstrates how one can
 
 - Setup base architecture of Flutter app using Clean Architecture
@@ -42,11 +42,8 @@ This sample demonstrates how one can
 - [Rxdart](https://pub.dev/packages/rxdart) : RxDart extends the capabilities of Dart Streams and StreamControllers.
 - [Dartz](https://pub.dev/packages/dartz) : Functional programming in Dart.
 
-# Module Structure
-
-<p align="center">
-  <img src="https://camo.githubusercontent.com/a5485a38e6af7aa1055807a47e1833fc9a35eb7b997940b26936dcffae760623/68747470733a2f2f6d69726f2e6d656469756d2e636f6d2f6d61782f3737322f302a73664344456235373157442d374566502e6a7067" />
-</p>
+## 🚀 Module Structure
+![Clean Architecture](lib/presentation/assets/images/CleanArchitecture.png)
 
 There are 3 main modules to help separate the code. They are Data, Domain, and Presentaion.
 
@@ -56,29 +53,178 @@ There are 3 main modules to help separate the code. They are Data, Domain, and P
 
 - **Presentaion** contains UI, View Objects, Widgets, etc. Can be split into separate modules itself if needed. For example, we could have a module called Device handling things like camera, location, etc.
 
+## 🚀 Flutter version: channel stable
+```
+environment:
+  sdk: '>=3.2.0-16.0.dev <4.0.0'
+  dart: ">=3.2.0-16.0.dev <4.0.0"
+  flutter: ">=3.10.0"
+```
+```
+Flutter 3.19.6 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision 54e66469a9 (5 days ago) • 2024-04-17 13:08:03 -0700
+Engine • revision c4cd48e186
+Tools • Dart 3.3.4 • DevTools 2.31.1
+```
 
-# Package structure
+## 🚀 Detail overview
 - Using modular architecture to architect the app per feature to be easier and more readable and isolate the feature from each other
 
-# Repository
+### Repository
 - Bridge between Data layer and Domain layer
 - Connects to data sources and returns mapped data
 - Data sources include DB and Api
 
-# UseCase
+#### - DataSource:
+```dart
+class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
+  final RestApiGateway _restApiGateway;
+
+  PhotoRemoteDataSourceImpl(this._restApiGateway);
+
+  @override
+  Future<Either<Failure, dynamic>> getPhoto(RequestPhoto? reqParams) async {
+    try {
+      final response = await _restApiGateway.dio.get(
+          "?key=${API_KEY}q=${reqParams?.query}&page=${reqParams?.page}&per_page=20");
+      if (response.statusCode == 200) {
+        var decode = Photos.fromJson(response.data);
+        return Right(decode);
+      } else {
+        return const Left(ServerFailure('Lỗi xảy ra'));
+      }
+    } on DioError catch (error) {
+      return const Left(ServerFailure('Lỗi xảy ra'));
+    }
+  }
+}
+```
+
+#### - RepositoryImpl:
+```dart
+class PhotoRepositoryImpl implements PhotoRepository {
+  final PhotoRemoteDataSource _dataSource;
+
+  PhotoRepositoryImpl(this._dataSource);
+
+  @override
+  Future<Either<Failure, dynamic>> getPhoto(RequestPhoto? reqParams) async {
+    return await _dataSource.getPhoto(reqParams);
+  }
+}
+```
+
+### Domain
 - Responsible for connecting to repository to retrieve necessary data. returns a Stream that will emit each update.
 - This is where the business logic takes place.
 - Returns data downstream.
 - Single use.
 - Lives in Domain (No Platform dependencies. Very testable).
 
-# Presentation (Holder)
+#### - UseCase:
+```dart
+class GetPhotoUseCase implements BaseUseCase<dynamic, RequestPhoto> {
+  final PhotoRepository repository;
+
+  GetPhotoUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, dynamic>> execute(RequestPhoto? reqParams) async {
+    return await repository.getPhoto(reqParams);
+  }
+}
+```
+
+### Presentation (Holder)
 - Organizes data and holds View state.
 - Talks to use cases.
+```dart
+class PhotoCubit extends Cubit<PhotoState> {
+  /// Input
+  final Sink<String?> search;
+  final Function0<void> dispose;
+  final Function0<void> onLoadMore;
+  final Function0<void> onRefresh;
 
-# Presentation (View)
+  /// Output
+  final Stream<PhotoState?> results$;
+
+  factory PhotoCubit(final GetPhotoUseCase getPhoto) {
+    final currentPage = BehaviorSubject<int>.seeded(1);
+    final onLoadMore = BehaviorSubject<void>();
+    final onRefresh = BehaviorSubject<void>();
+    final textChangesS = BehaviorSubject<String>();
+    final List<Hits> appendPhotos = [];
+
+    final loadMore$ = onLoadMore.doOnData((event) {
+      var nextPage = currentPage.value + 1;
+      currentPage.add(nextPage);
+    }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
+
+    final refresh$ = onRefresh.doOnData((event) {
+      currentPage.add(1);
+    }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
+
+    final search$ = textChangesS.doOnData((event) {
+      currentPage.add(1);
+    });
+
+    final results = Rx.merge([refresh$, search$, loadMore$])
+        .debounceTime(const Duration(milliseconds: 350))
+        .switchMap((String keyword) {
+      if (keyword.isEmpty) {
+        return Stream.value(null);
+      } else {
+        return Stream.fromFuture(getPhoto
+                .execute(RequestPhoto(query: keyword, page: currentPage.value)))
+            .flatMap((either) => either.fold((error) {
+                  return Stream<PhotoState?>.value(
+                      PhotoError(error.message.toString()));
+                }, (data) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  if (currentPage.value == 1) {
+                    appendPhotos.clear();
+                  }
+                  appendPhotos.addAll(data.hits);
+                  return Stream<PhotoState?>.value(PhotoLoaded(
+                      data: appendPhotos,
+                      currentPage: currentPage.value,
+                      hasReachedMax: appendPhotos.length < data?.totalHits));
+                }))
+            .startWith(const PhotoLoading())
+            .onErrorReturnWith(
+                (error, _) => const PhotoError("Đã có lỗi xảy ra"));
+      }
+    });
+    return PhotoCubit._(
+      search: textChangesS.sink,
+      onLoadMore: () => onLoadMore.add(null),
+      onRefresh: () => onRefresh.add(null),
+      results$: results,
+      dispose: () {
+        textChangesS.close();
+        currentPage.close();
+        onLoadMore.close();
+        onRefresh.close();
+      },
+    );
+  }
+
+  PhotoCubit._({
+    required this.search,
+    required this.onRefresh,
+    required this.onLoadMore,
+    required this.results$,
+    required this.dispose,
+  }) : super(const PhotoInitial());
+}
+```
+
+### Presentation (View)
 - View,updates UI
 
 ## 🚀 Screenshoots
-![alt text](https://github.com/LamNguyen17/flutter_clean_architecture/blob/master/lib/presentation/assets/images/rs1.png)
-![alt text](https://github.com/LamNguyen17/flutter_clean_architecture/blob/master/lib/presentation/assets/images/rs2.png)
+
+|               Default Search                |          Search keyword (ex: flo)           |
+|:-------------------------------------------:|:-------------------------------------------:|
+| ![](lib/presentation/assets/images/rs1.png) | ![](lib/presentation/assets/images/rs2.png) |
