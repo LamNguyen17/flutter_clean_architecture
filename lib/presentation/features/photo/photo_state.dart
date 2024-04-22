@@ -17,11 +17,14 @@ class PhotoLoading extends PhotoState {
 
 class PhotoLoaded extends PhotoState {
   final dynamic data;
+  final bool hasReachedMax;
+  final int currentPage;
 
-  const PhotoLoaded(this.data);
+  const PhotoLoaded(
+      {this.data, required this.hasReachedMax, required this.currentPage});
 
   @override
-  List<Object> get props => [data];
+  List<Object> get props => [data, hasReachedMax, currentPage];
 }
 
 class PhotoError extends PhotoState {

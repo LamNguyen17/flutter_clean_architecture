@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter_clean_architecture/di/injection.dart';
-import 'package:flutter_clean_architecture/presentation/components/text_primary.dart';
-
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_cubit.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
 
@@ -41,7 +39,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
           ),
           body: RefreshIndicator(
             onRefresh: () async {
-              _photoBloc.loadMore();
+              _photoBloc.onRefresh();
             },
             child: Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -100,14 +98,27 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
   Widget _renderStatePage(PhotoState? state) {
     if (state is PhotoLoaded) {
-      return WidgetCustomerSuccess(state.data);
+      return NotificationListener<ScrollNotification>(
+        onNotification: (scrollInfo) {
+          if (scrollInfo is ScrollStartNotification) {
+          } else if (scrollInfo is ScrollUpdateNotification) {
+          } else if (scrollInfo is ScrollEndNotification) {
+            if (state.hasReachedMax &&
+                scrollInfo.metrics.pixels ==
+                    scrollInfo.metrics.maxScrollExtent) {
+              _photoBloc.onLoadMore();
+            }
+          }
+          return false;
+        },
+        child: WidgetCustomerSuccess(state.data),
+      );
     } else if (state is PhotoError) {
       return const Text('PhotoError');
     } else if (state is PhotoLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    return const Text('PhotoError 2');
-    // return const SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }
 
@@ -118,14 +129,18 @@ class WidgetCustomerSuccess extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('WidgetCustomerSuccess: $data - ${data.hits}');
+    if (data?.length == 0) {
+      return const Center(
+        child: Text('No photo received'),
+      );
+    }
     return ListView.builder(
       shrinkWrap: true,
       physics: AlwaysScrollableScrollPhysics(
           parent: Platform.isIOS
               ? const BouncingScrollPhysics()
               : const ClampingScrollPhysics()),
-      itemCount: data.hits.length,
+      itemCount: data.length,
       itemBuilder: (context, index) {
         return GestureDetector(
           child: Card(
@@ -135,7 +150,7 @@ class WidgetCustomerSuccess extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CachedNetworkImage(
-                    imageUrl: '${data.hits[index].previewURL}',
+                    imageUrl: '${data[index].previewURL}',
                     imageBuilder: (context, image) => CircleAvatar(
                       backgroundImage: image,
                       radius: 50,
@@ -153,7 +168,7 @@ class WidgetCustomerSuccess extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${data.hits[index].user}',
+                            '${data[index].user}',
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                             softWrap: false,
@@ -163,16 +178,16 @@ class WidgetCustomerSuccess extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Thẻ: ${data.hits[index].tags}',
+                            'Thẻ: ${data[index].tags}',
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           Text(
-                            'Lượt thích: ${data.hits[index].likes}',
+                            'Lượt thích: ${data[index].likes}',
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            'Bình luận: ${data.hits[index].comments}',
+                            'Bình luận: ${data[index].comments}',
                             overflow: TextOverflow.ellipsis,
                           ),
                         ]),
