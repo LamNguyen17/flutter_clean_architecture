@@ -79,5 +79,6 @@ There are 3 main modules to help separate the code. They are Data, Domain, and P
 # Presentation (View)
 - View,updates UI
 
-## 🚀 UI example
-![alt text](https://github.com/LamNguyen17/flutter_clean_architecture/blob/master/lib/presentation/assets/images/img.png)
+## 🚀 Screenshoots
+![alt text](https://github.com/LamNguyen17/flutter_clean_architecture/blob/master/lib/presentation/assets/images/rs1.png)
+![alt text](https://github.com/LamNguyen17/flutter_clean_architecture/blob/master/lib/presentation/assets/images/rs2.png)
