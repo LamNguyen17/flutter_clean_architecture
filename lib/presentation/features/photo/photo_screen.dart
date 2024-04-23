@@ -1,10 +1,9 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter_clean_architecture/di/injection.dart';
-import 'package:flutter_clean_architecture/presentation/features/photo/photo_cubit.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
 
 class PhotoScreen extends StatefulWidget {
@@ -15,7 +14,7 @@ class PhotoScreen extends StatefulWidget {
 }
 
 class _PhotoScreenState extends State<PhotoScreen> {
-  final _photoBloc = injector.get<PhotoCubit>();
+  final _photoBloc = injector.get<PhotoBloc>();
 
   @override
   void initState() {
@@ -30,9 +29,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<PhotoCubit>(
-      create: (_) => _photoBloc,
-      child: Scaffold(
+    return Scaffold(
           appBar: AppBar(
             title: const Text("Flutter Clean Architecture"),
             backgroundColor: Colors.white,
@@ -92,8 +89,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
                             })),
                   ],
                 )),
-          )),
-    );
+          ));
   }
 
   Widget _renderStatePage(PhotoState? state) {

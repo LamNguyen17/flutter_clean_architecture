@@ -1,9 +1,10 @@
+import 'package:flutter_clean_architecture/domain/entities/photo/photo.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'photo_model.g.dart';
 
 @JsonSerializable()
-class Hits {
+class HitsResponse {
   final int id;
   final String? pageURL;
   final String? type;
@@ -28,7 +29,7 @@ class Hits {
   final String? user;
   final String? userImageURL;
 
-  Hits(
+  HitsResponse(
     this.id,
     this.pageURL,
     this.type,
@@ -53,24 +54,61 @@ class Hits {
     this.userImageURL,
   );
 
-  factory Hits.fromJson(Map<String, dynamic> json) => _$HitsFromJson(json);
+  factory HitsResponse.fromJson(Map<String, dynamic> json) =>
+      _$HitsResponseFromJson(json);
 
-  Hits toJson() => _$HitsFromJson(this as Map<String, dynamic>);
+  HitsResponse toJson() => _$HitsResponseFromJson(this as Map<String, dynamic>);
+
+  Hits toEntity() {
+    return Hits(
+      id: id,
+      pageURL: pageURL,
+      type: type,
+      tags: tags,
+      previewURL: previewURL,
+      previewWidth: previewWidth,
+      previewHeight: previewHeight,
+      webformatURL: webformatURL,
+      webformatWidth: webformatWidth,
+      webformatHeight: webformatHeight,
+      largeImageURL: largeImageURL,
+      imageWidth: imageWidth,
+      imageHeight: imageHeight,
+      imageSize: imageSize,
+      views: views,
+      downloads: downloads,
+      collections: collections,
+      likes: likes,
+      comments: comments,
+      userId: userId,
+      user: user,
+      userImageURL: userImageURL,
+    );
+  }
 }
 
 @JsonSerializable(explicitToJson: true)
-class Photos {
+class PhotosResponse {
   final int total;
   final int totalHits;
-  final List<Hits> hits;
+  final List<HitsResponse>? hits;
 
-  Photos(
+  PhotosResponse(
     this.total,
     this.totalHits,
     this.hits,
   );
 
-  factory Photos.fromJson(Map<String, dynamic> json) => _$PhotosFromJson(json);
+  factory PhotosResponse.fromJson(Map<String, dynamic> json) =>
+      _$PhotosResponseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$PhotosToJson(this);
+  Map<String, dynamic> toJson() => _$PhotosResponseToJson(this);
+
+  Photos toEntity() {
+    return Photos(
+      total: total,
+      totalHits: totalHits,
+      hits: hits?.map((x) => x.toEntity()).toList(),
+    );
+  }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_clean_architecture/common/helper/flavor_config.dart';
 import 'package:flutter_clean_architecture/data/config/app_config.dart';
 import 'package:flutter_clean_architecture/di/injection.dart';
@@ -11,12 +10,7 @@ void main() async {
     flavor: Flavor.dev,
     values: FlavorValues(baseUrl: AppConfig().endPointDevelopment),
   );
-  Bloc.observer = const AppBlocObserver();
   runApp(const MyApp());
-  // runApp(MultiBlocProvider(
-  //   providers: const [],
-  //   child: const MyApp(),
-  // ));
 }
 
 class MyApp extends StatelessWidget {
@@ -33,24 +27,5 @@ class MyApp extends StatelessWidget {
       ),
       home: const PhotoScreen(),
     );
-  }
-}
-
-class AppBlocObserver extends BlocObserver {
-  const AppBlocObserver();
-
-  @override
-  void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
-    super.onChange(bloc, change);
-    if (bloc is Cubit) print(change);
-  }
-
-  @override
-  void onTransition(
-      Bloc<dynamic, dynamic> bloc,
-      Transition<dynamic, dynamic> transition,
-      ) {
-    super.onTransition(bloc, transition);
-    print(transition);
   }
 }

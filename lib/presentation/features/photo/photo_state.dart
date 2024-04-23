@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_clean_architecture/domain/entities/photo/photo.dart';
 
 abstract class PhotoState extends Equatable {
   const PhotoState();
@@ -16,12 +17,12 @@ class PhotoLoading extends PhotoState {
 }
 
 class PhotoLoaded extends PhotoState {
-  final dynamic data;
+  final List<Hits> data;
   final bool hasReachedMax;
   final int currentPage;
 
   const PhotoLoaded(
-      {this.data, required this.hasReachedMax, required this.currentPage});
+      {required this.data, required this.hasReachedMax, required this.currentPage});
 
   @override
   List<Object> get props => [data, hasReachedMax, currentPage];

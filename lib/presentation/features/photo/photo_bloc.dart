@@ -1,13 +1,12 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:flutter_clean_architecture/data/models/photo/photo_model.dart';
+import 'package:flutter_clean_architecture/domain/entities/photo/photo.dart';
 import 'package:flutter_clean_architecture/domain/usecases/photo/get_photo_usecase.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
 
-class PhotoCubit extends Cubit<PhotoState> {
+class PhotoBloc {
   /// Input
   final Sink<String?> search;
   final Function0<void> dispose;
@@ -17,7 +16,7 @@ class PhotoCubit extends Cubit<PhotoState> {
   /// Output
   final Stream<PhotoState?> results$;
 
-  factory PhotoCubit(final GetPhotoUseCase getPhoto) {
+  factory PhotoBloc(final GetPhotoUseCase getPhoto) {
     final currentPage = BehaviorSubject<int>.seeded(1);
     final onLoadMore = BehaviorSubject<void>();
     final onRefresh = BehaviorSubject<void>();
@@ -53,18 +52,18 @@ class PhotoCubit extends Cubit<PhotoState> {
                   if (currentPage.value == 1) {
                     appendPhotos.clear();
                   }
-                  appendPhotos.addAll(data.hits);
+                  appendPhotos.addAll(data.hits as List<Hits>);
                   return Stream<PhotoState?>.value(PhotoLoaded(
                       data: appendPhotos,
                       currentPage: currentPage.value,
-                      hasReachedMax: appendPhotos.length < data?.totalHits));
+                      hasReachedMax: appendPhotos.length < data.totalHits));
                 }))
             .startWith(const PhotoLoading())
             .onErrorReturnWith(
                 (error, _) => const PhotoError("Đã có lỗi xảy ra"));
       }
     });
-    return PhotoCubit._(
+    return PhotoBloc._(
       search: textChangesS.sink,
       onLoadMore: () => onLoadMore.add(null),
       onRefresh: () => onRefresh.add(null),
@@ -78,11 +77,11 @@ class PhotoCubit extends Cubit<PhotoState> {
     );
   }
 
-  PhotoCubit._({
+  PhotoBloc._({
     required this.search,
     required this.onRefresh,
     required this.onLoadMore,
     required this.results$,
     required this.dispose,
-  }) : super(const PhotoInitial());
+  });
 }

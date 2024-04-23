@@ -6,7 +6,7 @@ part of 'photo_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Hits _$HitsFromJson(Map<String, dynamic> json) => Hits(
+HitsResponse _$HitsResponseFromJson(Map<String, dynamic> json) => HitsResponse(
       json['id'] as int,
       json['pageURL'] as String?,
       json['type'] as String?,
@@ -31,7 +31,8 @@ Hits _$HitsFromJson(Map<String, dynamic> json) => Hits(
       json['userImageURL'] as String?,
     );
 
-Map<String, dynamic> _$HitsToJson(Hits instance) => <String, dynamic>{
+Map<String, dynamic> _$HitsResponseToJson(HitsResponse instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'pageURL': instance.pageURL,
       'type': instance.type,
@@ -56,16 +57,18 @@ Map<String, dynamic> _$HitsToJson(Hits instance) => <String, dynamic>{
       'userImageURL': instance.userImageURL,
     };
 
-Photos _$PhotosFromJson(Map<String, dynamic> json) => Photos(
+PhotosResponse _$PhotosResponseFromJson(Map<String, dynamic> json) =>
+    PhotosResponse(
       json['total'] as int,
       json['totalHits'] as int,
-      (json['hits'] as List<dynamic>)
-          .map((e) => Hits.fromJson(e as Map<String, dynamic>))
+      (json['hits'] as List<dynamic>?)
+          ?.map((e) => HitsResponse.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$PhotosToJson(Photos instance) => <String, dynamic>{
+Map<String, dynamic> _$PhotosResponseToJson(PhotosResponse instance) =>
+    <String, dynamic>{
       'total': instance.total,
       'totalHits': instance.totalHits,
-      'hits': instance.hits.map((e) => e.toJson()).toList(),
+      'hits': instance.hits?.map((e) => e.toJson()).toList(),
     };
