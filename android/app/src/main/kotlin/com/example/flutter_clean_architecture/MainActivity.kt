@@ -36,7 +36,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun getVersionName(): String {
-        return getPackageInfo().versionName
+        return getPackageInfo().versionName ?: "unknown"
     }
 
     private fun getVersionCode(): String {

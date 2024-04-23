@@ -26,10 +26,10 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
   void fetchDataFromNative() async {
     try {
-      final double result = await platformChannel.invokeMethod('first_install_time_method');
-      final String result1 = await platformChannel.invokeMethod('version_name_method');
-      final String result2 = await platformChannel.invokeMethod('version_code_method');
-      final String result3 = await platformChannel.invokeMethod('app_name_method');
+      final dynamic result = await platformChannel.invokeMethod('first_install_time_method');
+      final dynamic result1 = await platformChannel.invokeMethod('version_name_method');
+      final dynamic result2 = await platformChannel.invokeMethod('version_code_method');
+      final dynamic result3 = await platformChannel.invokeMethod('app_name_method');
       print('Result from Native: $result - $result1 - $result2 - $result3');
     } on PlatformException catch (e) {
       print('Error: ${e.message}');
