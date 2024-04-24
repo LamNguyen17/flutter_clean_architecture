@@ -10,10 +10,10 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private companion object {
         const val DEVICE_INFO_CHANNEL = "com.example.flutter_clean_architecture/channel"
-        const val FIRST_INSTALL_TIME_METHOD = "first_install_time_method"
-        const val VERSION_NAME_METHOD = "version_name_method"
-        const val VERSION_CODE_METHOD = "version_code_method"
-        const val APP_NAME_METHOD = "app_name_method"
+        const val FIRST_INSTALL_TIME = "first_install_time_method"
+        const val APP_VERSION = "app_version_method"
+        const val APP_NAME = "app_name_method"
+        const val BUILD_NUMBER = "build_number_method"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -21,10 +21,10 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_INFO_CHANNEL).apply {
             setMethodCallHandler { call: MethodCall, result: MethodChannel.Result ->
                 when (call.method) {
-                    FIRST_INSTALL_TIME_METHOD -> result.success(getFirstInstallTime())
-                    VERSION_NAME_METHOD -> result.success(getVersionName())
-                    VERSION_CODE_METHOD -> result.success(getVersionCode())
-                    APP_NAME_METHOD -> result.success(getAppName())
+                    FIRST_INSTALL_TIME -> result.success(getFirstInstallTime())
+                    APP_VERSION -> result.success(getVersionName())
+                    BUILD_NUMBER -> result.success(getVersionCode())
+                    APP_NAME -> result.success(getAppName())
                     else -> result.notImplemented()
                 }
             }

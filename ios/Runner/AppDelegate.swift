@@ -1,61 +1,47 @@
 import UIKit
 import Flutter
 
+let DEVICE_INFO_CHANNEL = "com.example.flutter_clean_architecture/channel"
+let FIRST_INSTALL_TIME = "first_install_time_method"
+let APP_VERSION = "app_version_method"
+let APP_NAME = "app_name_method"
+let BUILD_NUMBER = "build_number_method"
+
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
-    private let DEVICE_INFO_CHANNEL = "com.example.flutter_clean_architecture/channel"
-    private let FIRST_INSTALL_TIME_METHOD = "first_install_time_method"
-    private let VERSION_NAME_METHOD = "version_name_method"
-    private let VERSION_CODE_METHOD = "version_code_method"
-    private let APP_NAME_METHOD = "app_name_method"
-    
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        GeneratedPluginRegistrant.register(with: self)
-        let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-        let platformChannel = FlutterMethodChannel(name: DEVICE_INFO_CHANNEL,
-                                                   binaryMessenger: controller.binaryMessenger)
-        platformChannel.setMethodCallHandler({
-            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-            
-            if (call.method == FIRST_INSTALL_TIME_METHOD) {
-                result(self?.getFirstInstallTime())
-            } else if (call.method == VERSION_NAME_METHOD) {
-                result(self?.getVersionName())
-            } else if (call.method == VERSION_CODE_METHOD) {
-                result(self?.getVersionCode())
-            } else if (call.method == APP_NAME_METHOD) {
-                result(self?.getAppName())
-            } else {
-                result(FlutterMethodNotImplemented)
+        let flutterVC = window?.rootViewController as! FlutterViewController
+        
+        let cryptoChannel = FlutterMethodChannel(
+            name: DEVICE_INFO_CHANNEL,
+            binaryMessenger: flutterVC.binaryMessenger
+        )
+        cryptoChannel.setMethodCallHandler { call, result in
+            switch (call.method) {
+            case FIRST_INSTALL_TIME:
+                    result(self.getFirstInstallTime())
+            case APP_VERSION:
+                    result(self.getAppVersion())
+            case APP_NAME:
+                    result(self.getAppName())
+            case BUILD_NUMBER:
+                    result(self.getBuildNumber())
+            default: result(FlutterMethodNotImplemented)
             }
-            
-            //            switch (call.method) {
-            //            case FIRST_INSTALL_TIME_METHOD:
-            //                result(self?.getFirstInstallTime())
-            //            case VERSION_NAME_METHOD:
-            //                result(self?.getVersionName())
-            //            case VERSION_CODE_METHOD:
-            //                result(self?.getVersionCode())
-            //            case APP_NAME_METHOD:
-            //                result(self?.getAppName())
-            //            default:
-            //                result(FlutterMethodNotImplemented)
-            //            }
-        })
+        }
+        GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
-    private func getVersionName() -> String {
-        let currentDevice = UIDevice.current
-        return currentDevice.systemName ?? "unknown"
+    private func getBuildNumber() -> String {
+        return Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
     }
     
-    private func getVersionCode() -> String {
-        let currentDevice = UIDevice.current
-        return currentDevice.systemVersion ?? "unknown"
+    private func getAppVersion() -> String {
+        return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     }
     
     private func getAppName() -> String {
@@ -64,14 +50,16 @@ import Flutter
         return displayName ?? bundleName ?? "unknown"
     }
     
-    private func getFirstInstallTime() -> String {
-        return "123"
-        //         let urlToDocumentsFolder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last
-        //         var installDate: Date?
-        //         do {
-        //             installDate = try FileManager.default.attributesOfItem(atPath: urlToDocumentsFolder?.path ?? "")[.creationDate] as? Date
-        //         } catch {
-        //         }
-        //         return NSNumber(value: floor(installDate?.timeIntervalSince1970 * 1000)).int64Value
+    private func getFirstInstallTime() -> Int64 {
+        let urlToDocumentsFolder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last!
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: urlToDocumentsFolder.path)
+            if let installDate = attributes[.creationDate] as? Date {
+                return Int64(floor(installDate.timeIntervalSince1970 * 1000))
+            }
+        } catch {
+            print("Error getting first install time: \(error)")
+        }
+        return 0
     }
 }
