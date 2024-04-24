@@ -4,7 +4,7 @@ const String channel = 'com.example.flutter_clean_architecture/channel';
 const methodChannel = MethodChannel(channel);
 
 /// Get First install time
-/// Return   : a [String] when success or [PlatformException] when failed
+/// Return   : a [double] when success or [PlatformException] when failed
 /// Ex: methodChannel.invokeMethod(firstInstallTime); //
 const String firstInstallTime = 'first_install_time_method';
 

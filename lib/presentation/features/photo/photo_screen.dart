@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_clean_architecture/common/constants/constants.dart';
 
 import 'package:flutter_clean_architecture/di/injection.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
@@ -16,8 +17,6 @@ class PhotoScreen extends StatefulWidget {
 
 class _PhotoScreenState extends State<PhotoScreen> {
   final _photoBloc = injector.get<PhotoBloc>();
-  final MethodChannel platformChannel =
-      const MethodChannel("com.example.flutter_clean_architecture/channel");
 
   @override
   void initState() {
@@ -27,14 +26,10 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
   void fetchDataFromNative() async {
     try {
-      final dynamic result =
-          await platformChannel.invokeMethod('first_install_time_method');
-      final dynamic result1 =
-          await platformChannel.invokeMethod('build_number_method');
-      final dynamic result2 =
-          await platformChannel.invokeMethod('app_version_method');
-      final dynamic result3 =
-          await platformChannel.invokeMethod('app_name_method');
+      final double result = await methodChannel.invokeMethod(firstInstallTime);
+      final String result1 = await methodChannel.invokeMethod(buildNumber);
+      final String result2 = await methodChannel.invokeMethod(appVersion);
+      final String result3 = await methodChannel.invokeMethod(appName);
       print('Result_from_Native: $result - $result1 - $result2 - $result3');
     } on PlatformException catch (e) {
       print('Error: ${e.message}');

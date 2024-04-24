@@ -252,6 +252,43 @@ class PhotoBloc {
 
 - View,updates UI
 
+## 🚀 Method Channel
+| Method                                                            | Return Type         |  iOS | Android |
+| ----------------------------------------------------------------- | ------------------- | :--: | :-----: |
+| [getFirstInstallTime](#getFirstInstallTime)                          | `double`            |  ✅  |   ✅    |
+| [getAppVersion](#getAppVersion)                                         | `String`            |  ✅  |   ✅    |
+| [getAppName](#getAppName)                                               | `String`            |  ✅  |   ✅    |
+| [getBuildNumber](#getBuildNumber)                                       | `String`            |  ✅  |   ✅    |
+
+---
+### getFirstInstallTime
+#### Examples
+```
+final double getFirstInstallTime = await methodChannel.invokeMethod(firstInstallTime);
+```
+---
+
+### getAppVersion
+#### Examples
+```
+final double getAppVersion = await methodChannel.invokeMethod(appVersion);
+```
+---
+
+### getAppName
+#### Examples
+```
+final double getAppName = await methodChannel.invokeMethod(appName);
+```
+---
+
+### getBuildNumber
+#### Examples
+```
+final double getBuildNumber = await methodChannel.invokeMethod(buildNumber);
+```
+---
+
 ## 🚀 Screenshoots
 
 |               Default Search                |          Search keyword (ex: flo)           |
