@@ -42,6 +42,9 @@ class PhotoBloc {
       if (keyword.isEmpty) {
         return Stream.value(null);
       } else {
+        if (currentPage.value == 1) {
+          const PhotoLoading();
+        }
         return Stream.fromFuture(getPhoto
                 .execute(RequestPhoto(query: keyword, page: currentPage.value)))
             .flatMap((either) => either.fold((error) {
@@ -58,7 +61,6 @@ class PhotoBloc {
                       currentPage: currentPage.value,
                       hasReachedMax: appendPhotos.length < data.totalHits));
                 }))
-            .startWith(const PhotoLoading())
             .onErrorReturnWith(
                 (error, _) => const PhotoError("Đã có lỗi xảy ra"));
       }
