@@ -169,26 +169,26 @@ class GetPhotoUseCase implements BaseUseCase<Photos, RequestPhoto> {
 class PhotoBloc {
   /// Input
   final Sink<String?> search;
+  final Sink<void> onLoadMore;
   final Function0<void> dispose;
-  final Function0<void> onLoadMore;
-  final Function0<void> onRefresh;
+  final Sink<void> onRefresh;
 
   /// Output
   final Stream<PhotoState?> results$;
 
-  factory PhotoCubit(final GetPhotoUseCase getPhoto) {
+  factory PhotoBloc(final GetPhotoUseCase getPhoto) {
     final currentPage = BehaviorSubject<int>.seeded(1);
-    final onLoadMore = BehaviorSubject<void>();
-    final onRefresh = BehaviorSubject<void>();
+    final loadMoreS = BehaviorSubject<void>();
+    final refreshS = BehaviorSubject<void>();
     final textChangesS = BehaviorSubject<String>();
     final List<Hits> appendPhotos = [];
 
-    final loadMore$ = onLoadMore.doOnData((event) {
+    final loadMore$ = loadMoreS.doOnData((event) {
       var nextPage = currentPage.value + 1;
       currentPage.add(nextPage);
     }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
 
-    final refresh$ = onRefresh.doOnData((event) {
+    final refresh$ = refreshS.doOnData((event) {
       currentPage.add(1);
     }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
 
@@ -196,44 +196,45 @@ class PhotoBloc {
       currentPage.add(1);
     });
 
-    final results = Rx.merge([refresh$, search$, loadMore$])
-        .debounceTime(const Duration(milliseconds: 350))
-        .switchMap((String keyword) {
+    final results$ = Rx.merge([refresh$, search$, loadMore$])
+            .debounceTime(const Duration(milliseconds: 350))
+            .switchMap((String keyword) {
       if (keyword.isEmpty) {
         return Stream.value(null);
       } else {
+        if (currentPage.value == 1) {
+          const PhotoLoading();
+        }
         return Stream.fromFuture(getPhoto
-            .execute(RequestPhoto(query: keyword, page: currentPage.value)))
-            .flatMap((either) =>
-            either.fold((error) {
-              return Stream<PhotoState?>.value(
+                .execute(RequestPhoto(query: keyword, page: currentPage.value)))
+                .flatMap((either) => either.fold((error) {
+          return Stream<PhotoState?>.value(
                   PhotoError(error.message.toString()));
-            }, (data) {
-              FocusManager.instance.primaryFocus?.unfocus();
-              if (currentPage.value == 1) {
-                appendPhotos.clear();
-              }
-              appendPhotos.addAll(data.hits as List<Hits>);
-              return Stream<PhotoState?>.value(PhotoLoaded(
+        }, (data) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          if (currentPage.value == 1) {
+            appendPhotos.clear();
+          }
+          appendPhotos.addAll(data.hits as List<Hits>);
+          return Stream<PhotoState?>.value(PhotoLoaded(
                   data: appendPhotos,
                   currentPage: currentPage.value,
-                  hasReachedMax: appendPhotos.length < data?.totalHits));
-            }))
-            .startWith(const PhotoLoading())
-            .onErrorReturnWith(
-                (error, _) => const PhotoError("Đã có lỗi xảy ra"));
+                  hasReachedMax: appendPhotos.length < data.totalHits));
+                }))
+                .onErrorReturnWith(
+                        (error, _) => const PhotoError("Đã có lỗi xảy ra"));
       }
     });
     return PhotoBloc._(
       search: textChangesS.sink,
-      onLoadMore: () => onLoadMore.add(null),
-      onRefresh: () => onRefresh.add(null),
-      results$: results,
+      onLoadMore: loadMoreS,
+      onRefresh: refreshS,
+      results$: results$,
       dispose: () {
         textChangesS.close();
         currentPage.close();
-        onLoadMore.close();
-        onRefresh.close();
+        loadMoreS.close();
+        refreshS.close();
       },
     );
   }
