@@ -36,7 +36,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
           ),
           body: RefreshIndicator(
             onRefresh: () async {
-              _photoBloc.onRefresh();
+              _photoBloc.onRefresh.add(null);
             },
             child: Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -102,7 +102,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
             if (state.hasReachedMax &&
                 scrollInfo.metrics.pixels ==
                     scrollInfo.metrics.maxScrollExtent) {
-              _photoBloc.onLoadMore();
+              _photoBloc.onLoadMore.add(null);
             }
           }
           return false;
