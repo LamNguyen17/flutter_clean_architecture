@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_clean_architecture/di/injection.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_controller.dart';
 
 class PhotoScreen extends StatefulWidget {
   const PhotoScreen({Key? key}) : super(key: key);
@@ -14,7 +15,8 @@ class PhotoScreen extends StatefulWidget {
 }
 
 class _PhotoScreenState extends State<PhotoScreen> {
-  final _photoBloc = injector.get<PhotoBloc>();
+  // final _photoBloc = injector.get<PhotoBloc>();
+  final _photoBloc1 = injector.get<PhotoViewController>();
 
   @override
   void initState() {
@@ -23,8 +25,9 @@ class _PhotoScreenState extends State<PhotoScreen> {
 
   @override
   void dispose() {
+    // _photoBloc.dispose();
+    _photoBloc1.output.dispose();
     super.dispose();
-    _photoBloc.dispose();
   }
 
   @override
@@ -36,7 +39,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            _photoBloc.onRefresh.add(null);
+            _photoBloc1.input.onRefresh.add(null);
           },
           child: Container(
               margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -49,7 +52,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
                   SizedBox(
                       height: 50,
                       child: TextFormField(
-                        onChanged: _photoBloc.search.add,
+                        onChanged: _photoBloc1.input.search.add,
                         maxLength: 50,
                         keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(fontWeight: FontWeight.w400),
@@ -79,7 +82,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
                       )),
                   Expanded(
                       child: StreamBuilder<PhotoState?>(
-                          stream: _photoBloc.results$,
+                          stream: _photoBloc1.output.results$,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               final result = snapshot.data;
@@ -102,7 +105,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
             if (state.hasReachedMax &&
                 scrollInfo.metrics.pixels ==
                     scrollInfo.metrics.maxScrollExtent) {
-              _photoBloc.onLoadMore.add(null);
+              _photoBloc1.input.onLoadMore.add(null);
             }
           }
           return false;
