@@ -32,9 +32,9 @@ class Output {
 }
 
 class PhotoViewModel extends BaseViewModel<Input, Output> {
-  final GetPhotoUseCase getPhoto;
+  final GetPhotoUseCase _getPhoto;
 
-  PhotoViewModel(this.getPhoto);
+  PhotoViewModel(this._getPhoto);
 
   @override
   Output transform(Input input) {
@@ -63,7 +63,7 @@ class PhotoViewModel extends BaseViewModel<Input, Output> {
         if (currentPage.value == 1) {
           const PhotoLoading();
         }
-        return Stream.fromFuture(getPhoto
+        return Stream.fromFuture(_getPhoto
                 .execute(RequestPhoto(query: keyword, page: currentPage.value)))
             .exhaustMap((either) => either.fold((error) {
                   return Stream<PhotoState?>.value(
