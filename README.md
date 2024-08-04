@@ -165,7 +165,7 @@ class GetPhotoUseCase implements BaseUseCase<Photos, RequestPhoto> {
 - Organizes data and holds View state.
 - Talks to use cases.
 
-#### ---> Case study 1 <---
+#### 🚀🚀🚀 Case study 1 🚀🚀🚀
 ```dart 
 class PhotoViewAdapter {
   /// Input
@@ -289,7 +289,7 @@ class PhotoViewModel extends BaseViewModel<Input, Output> {
 }
 ```
 
-#### ---> Case study 2 <---
+#### 🚀🚀🚀 Case study 2 🚀🚀🚀
 
 ```dart 
 class PhotoBloc {
