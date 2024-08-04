@@ -165,7 +165,133 @@ class GetPhotoUseCase implements BaseUseCase<Photos, RequestPhoto> {
 - Organizes data and holds View state.
 - Talks to use cases.
 
+#### ---> Case study 1 <---
+```dart 
+class PhotoViewAdapter {
+  /// Input
+  final Input input;
+
+  /// Output
+  final Output output;
+
+  factory PhotoViewAdapter(final PhotoViewModel photoViewModel) {
+    final loadMoreS = BehaviorSubject<void>();
+    final refreshS = BehaviorSubject<void>();
+    final textChangesS = BehaviorSubject<String>();
+
+    var input = Input(
+      search: textChangesS,
+      onLoadMore: loadMoreS,
+      onRefresh: refreshS,
+    );
+    var output = photoViewModel.transform(input);
+
+    return PhotoViewAdapter._(
+      input: input,
+      output: output,
+    );
+  }
+
+  PhotoViewAdapter._({
+    required this.input,
+    required this.output,
+  });
+}
+```
+
 ```dart
+class Input {
+  final BehaviorSubject<String> search;
+  final BehaviorSubject<void> onLoadMore;
+  final BehaviorSubject<void> onRefresh;
+
+  Input({
+    required this.search,
+    required this.onLoadMore,
+    required this.onRefresh,
+  });
+}
+
+class Output {
+  final Stream<PhotoState?> results$;
+  final Function0<void> dispose;
+
+  Output({
+    required this.results$,
+    required this.dispose,
+  });
+}
+
+class PhotoViewModel extends BaseViewModel<Input, Output> {
+  final GetPhotoUseCase _getPhoto;
+
+  PhotoViewModel(this._getPhoto);
+
+  @override
+  Output transform(Input input) {
+    final currentPage = BehaviorSubject<int>.seeded(1);
+    final List<Hits> appendPhotos = [];
+
+    final loadMore$ = input.onLoadMore.doOnData((event) {
+      var nextPage = currentPage.value + 1;
+      currentPage.add(nextPage);
+    }).withLatestFrom(input.search, (_, s) => input.search.value);
+
+    final refresh$ = input.onRefresh.doOnData((event) {
+      currentPage.add(1);
+    }).withLatestFrom(input.search, (_, s) => input.search.value);
+
+    final search$ = input.search.doOnData((event) {
+      currentPage.add(1);
+    });
+
+    final results$ = Rx.merge([refresh$, search$, loadMore$])
+        .debounceTime(const Duration(milliseconds: 350))
+        .switchMap((String keyword) {
+      if (keyword.isEmpty) {
+        return Stream.value(null);
+      } else {
+        if (currentPage.value == 1) {
+          const PhotoLoading();
+        }
+        return Stream.fromFuture(_getPhoto
+                .execute(RequestPhoto(query: keyword, page: currentPage.value)))
+            .exhaustMap((either) => either.fold((error) {
+                  return Stream<PhotoState?>.value(
+                      PhotoError(error.message.toString()));
+                }, (data) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  if (currentPage.value == 1) {
+                    appendPhotos.clear();
+                  }
+                  appendPhotos.addAll(data.hits as List<Hits>);
+                  return Stream<PhotoState?>.value(PhotoLoaded(
+                      data: appendPhotos,
+                      currentPage: currentPage.value,
+                      hasReachedMax: appendPhotos.length < data.totalHits));
+                }))
+            .debug()
+            .onErrorReturnWith(
+                (error, _) => const PhotoError("Đã có lỗi xảy ra"));
+      }
+    });
+
+    return Output(
+      results$: results$,
+      dispose: () {
+        input.search.close();
+        input.onLoadMore.close();
+        input.onRefresh.close();
+        currentPage.close();
+      },
+    );
+  }
+}
+```
+
+#### ---> Case study 2 <---
+
+```dart 
 class PhotoBloc {
   /// Input
   final Sink<String?> search;
