@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_clean_architecture/presentation/common/debug_stream.dart';
 
 import 'package:rxdart/rxdart.dart';
 
+import 'package:flutter_clean_architecture/presentation/common/debug_stream.dart';
 import 'package:flutter_clean_architecture/domain/entities/photo/photo.dart';
 import 'package:flutter_clean_architecture/domain/usecases/photo/get_photo_usecase.dart';
 import 'package:flutter_clean_architecture/presentation/common/base/base_view_model.dart';
@@ -86,12 +86,13 @@ class PhotoViewModel extends BaseViewModel<Input, Output> {
     });
 
     return Output(
-        results$: results$,
-        dispose: () {
-          input.search.close();
-          input.onLoadMore.close();
-          input.onRefresh.close();
-          currentPage.close();
-        });
+      results$: results$,
+      dispose: () {
+        input.search.close();
+        input.onLoadMore.close();
+        input.onRefresh.close();
+        currentPage.close();
+      },
+    );
   }
 }

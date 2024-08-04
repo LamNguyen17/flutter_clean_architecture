@@ -5,7 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_clean_architecture/di/injection.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
-import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_controller.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_adapter.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_model.dart';
 
 class PhotoScreen extends StatefulWidget {
   const PhotoScreen({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class PhotoScreen extends StatefulWidget {
 
 class _PhotoScreenState extends State<PhotoScreen> {
   // final _photoBloc = injector.get<PhotoBloc>();
-  final _photoBloc1 = injector.get<PhotoViewController>();
+  final _photoBloc1 = injector.get<PhotoViewAdapter>();
 
   @override
   void initState() {
