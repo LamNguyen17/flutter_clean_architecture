@@ -14,6 +14,7 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
 
   @override
   Future<PhotosResponse> getPhoto(RequestPhoto? reqParams) async {
+    print('getPhoto: ${reqParams?.page}');
     final response = (reqParams?.query != null
         ? await _restApiGateway.dio.get(
             "?key=10378494-67ad2479ecf48567970bc1f0e&q=${reqParams?.query}&page=${reqParams?.page}&per_page=20")

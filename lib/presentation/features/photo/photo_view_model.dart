@@ -1,39 +1,56 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 
-import 'package:dartz/dartz.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'package:flutter_clean_architecture/presentation/common/debug_stream.dart';
 import 'package:flutter_clean_architecture/domain/entities/photo/photo.dart';
 import 'package:flutter_clean_architecture/domain/usecases/photo/get_photo_usecase.dart';
+import 'package:flutter_clean_architecture/presentation/common/base/base_view_model.dart';
 import 'package:flutter_clean_architecture/presentation/features/photo/photo_state.dart';
 
-class PhotoBloc {
-  /// Input
-  final Sink<String?> search;
-  final Sink<void> onLoadMore;
-  final Sink<void> onRefresh;
+class Input {
+  final BehaviorSubject<String> search;
+  final BehaviorSubject<void> onLoadMore;
+  final BehaviorSubject<void> onRefresh;
 
-  /// Output
+  Input({
+    required this.search,
+    required this.onLoadMore,
+    required this.onRefresh,
+  });
+}
+
+class Output {
   final Stream<PhotoState?> results$;
   final Function0<void> dispose;
 
-  factory PhotoBloc(final GetPhotoUseCase getPhoto) {
+  Output({
+    required this.results$,
+    required this.dispose,
+  });
+}
+
+class PhotoViewModel extends BaseViewModel<Input, Output> {
+  final GetPhotoUseCase _getPhoto;
+
+  PhotoViewModel(this._getPhoto);
+
+  @override
+  Output transform(Input input) {
     final currentPage = BehaviorSubject<int>.seeded(1);
-    final loadMoreS = BehaviorSubject<void>();
-    final refreshS = BehaviorSubject<void>();
-    final textChangesS = BehaviorSubject<String>();
     final List<Hits> appendPhotos = [];
 
-    final loadMore$ = loadMoreS.doOnData((event) {
+    final loadMore$ = input.onLoadMore.doOnData((event) {
       var nextPage = currentPage.value + 1;
       currentPage.add(nextPage);
-    }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
+    }).withLatestFrom(input.search, (_, s) => input.search.value);
 
-    final refresh$ = refreshS.doOnData((event) {
+    final refresh$ = input.onRefresh.doOnData((event) {
       currentPage.add(1);
-    }).withLatestFrom(textChangesS, (_, s) => textChangesS.value);
+    }).withLatestFrom(input.search, (_, s) => input.search.value);
 
-    final search$ = textChangesS.doOnData((event) {
+    final search$ = input.search.doOnData((event) {
       currentPage.add(1);
     });
 
@@ -46,9 +63,9 @@ class PhotoBloc {
         if (currentPage.value == 1) {
           const PhotoLoading();
         }
-        return Stream.fromFuture(getPhoto
+        return Stream.fromFuture(_getPhoto
                 .execute(RequestPhoto(query: keyword, page: currentPage.value)))
-            .flatMap((either) => either.fold((error) {
+            .exhaustMap((either) => either.fold((error) {
                   return Stream<PhotoState?>.value(
                       PhotoError(error.message.toString()));
                 }, (data) {
@@ -62,29 +79,20 @@ class PhotoBloc {
                       currentPage: currentPage.value,
                       hasReachedMax: appendPhotos.length < data.totalHits));
                 }))
+            .debug()
             .onErrorReturnWith(
                 (error, _) => const PhotoError("Đã có lỗi xảy ra"));
       }
     });
-    return PhotoBloc._(
-      search: textChangesS.sink,
-      onLoadMore: loadMoreS,
-      onRefresh: refreshS,
+
+    return Output(
       results$: results$,
       dispose: () {
-        textChangesS.close();
+        input.search.close();
+        input.onLoadMore.close();
+        input.onRefresh.close();
         currentPage.close();
-        loadMoreS.close();
-        refreshS.close();
       },
     );
   }
-
-  PhotoBloc._({
-    required this.search,
-    required this.onRefresh,
-    required this.onLoadMore,
-    required this.results$,
-    required this.dispose,
-  });
 }

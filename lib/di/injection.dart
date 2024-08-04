@@ -1,12 +1,14 @@
-import 'package:flutter_clean_architecture/data/datasources/photo/photo_remote_data_source.dart';
-import 'package:flutter_clean_architecture/data/repositories/photo_repository_impl.dart';
-import 'package:flutter_clean_architecture/domain/usecases/photo/get_photo_usecase.dart';
-import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:flutter_clean_architecture/domain/usecases/photo/get_photo_usecase.dart';
+import 'package:flutter_clean_architecture/data/datasources/photo/photo_remote_data_source.dart';
+import 'package:flutter_clean_architecture/data/repositories/photo_repository_impl.dart';
 import 'package:flutter_clean_architecture/data/gateway/memory_gateway.dart';
 import 'package:flutter_clean_architecture/data/gateway/rest_api_gateway.dart';
 import 'package:flutter_clean_architecture/data/gateway/storage_gateway.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_bloc.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_adapter.dart';
+import 'package:flutter_clean_architecture/presentation/features/photo/photo_view_model.dart';
 
 final injector = GetIt.instance;
 
@@ -21,6 +23,14 @@ Future<void> configureDI() async {
 
 Future<void> injectionBloc() async {
   injector.registerFactory(() => PhotoBloc(
+    injector.get<GetPhotoUseCase>(),
+  ));
+
+  injector.registerFactory(() => PhotoViewAdapter(
+    injector.get<PhotoViewModel>(),
+  ));
+
+  injector.registerFactory(() => PhotoViewModel(
     injector.get<GetPhotoUseCase>(),
   ));
 }
